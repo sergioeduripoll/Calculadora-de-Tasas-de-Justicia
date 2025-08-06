@@ -1,0 +1,21 @@
+# Ignorar archivos del IDE (Android Studio)
+.idea/
+.gradle/
+local.properties
+captures/
+
+# Ignorar archivos de compilación
+build/
+app/build/
+*.apk
+*.aab
+
+# Archivos de Gradle
+# Se ignora este patrón de forma predeterminada
+# gradle-wrapper.jar
+# pero lo volvemos a incluir explícitamente para que el flujo de trabajo funcione
+!gradle/wrapper/gradle-wrapper.jar
+
+# Otros archivos
+.DS_Store
+*.log
