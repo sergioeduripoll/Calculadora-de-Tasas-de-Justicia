@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="es">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>
+   Calculadora de Tasas de Justicia - Poder Judicial Santa Cruz
+  </title>
+  <script src="https://cdn.tailwindcss.com">
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
+  </script>
+  <style>
+   body { font-size: 16px; }
+        @media (min-width: 640px) {
+            body { font-size: 18px; }
+        }
+        .input-group { margin-bottom: 1rem; }
+        .input-group label { display: block; margin-bottom: 0.25rem; font-weight: 500; color: #1a202c; }
+        .input-group input,
+        .input-group select { width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem; box-sizing: border-box; color: #1a202c; }
+        .result-item strong { color: #1a202c; }
+        .cotizacion-input-group,
+        .valuacion-input-group { display: flex; align-items: flex-end; gap: 0.5rem; flex-wrap: wrap; }
+        .cotizacion-input-group > div,
+        .valuacion-input-group > div { flex-grow: 1; }
+        .cotizacion-input-group label,
+        .valuacion-input-group label { width: 100%; margin-bottom: 0.25rem; }
+        .cotizacion-input-group .flex-grow,
+        .valuacion-input-group .flex-grow { flex-grow: 1; }
+        .cotizacion-input-group .flex-shrink-0,
+        .valuacion-input-group .flex-shrink-0 { flex-shrink: 0; }
+        .bien-container { border: 1px solid #e5e7eb; padding: 1rem; border-radius: 0.5rem; margin-top: 1rem; background-color: #f9fafb; position: relative; }
+        .bien-container .remove-bien-btn {
+  border-radius: 9999px;
+  background-color: #6b7280; /* gray-500 */
+  color: white;
+  border: none;
+  font-size: 1rem;
+  font-weight: 600;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+.remove-bien-btn:hover {
+  background-color: #374151; /* gray-700 */
+} position: absolute; top: 0.5rem; right: 0.5rem; background-color: #dc2626; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; cursor: pointer; line-height: 1; z-index: 10; }
+        .action-button { display: flex; justify-content: center; align-items: center; text-align: center; aspect-ratio: 1/1; padding: 0.25rem; font-size: 0.75rem; line-height: 1rem; flex-grow: 1; border-radius: 9999px; position: relative; transition: all 0.1s ease-out; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.06); transform: translateY(0); opacity: 0.8; font-weight: bold; }
+        .action-button:hover { opacity: 1; }
+        .action-button:active { box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05); transform: translateY(2px); }
+        .sub-button { display: inline-flex; justify-content: center; align-items: center; padding: 0.5rem 0.75rem; font-size: 0.875rem; line-height: 1.25rem; border-radius: 0.375rem; transition: background-color 0.1s ease-in-out; white-space: nowrap; opacity: 0.8; font-weight: bold; }
+        .sub-button:hover { opacity: 1; }
+        @media (min-width: 640px) { .action-button { font-size: 1rem; } }
+        #addBienBtn, #addBienDivorcioBtn {
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            border-radius: 0.5rem;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.06);
+            transform: translateY(0);
+            transition: all 0.1s ease-out;
+            flex-grow: 0;
+            flex-shrink: 0;
+            opacity: 0.8;
+            font-weight: bold;
+        }
+        #addBienBtn:hover, #addBienDivorcioBtn:hover {
+            opacity: 1;
+        }
+        #addBienBtn:active, #addBienDivorcioBtn:active {
+            box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
+            transform: translateY(2px);
+        }
+        .flex.justify-center.mt-4 { display: flex; justify-content: center; }
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background-color: white; padding: 1.5rem; border-radius: 0.5rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); width: 90%; max-width: 400px; }
+    
+.btn-oval {
+  border: 2px solid #0a3d62;
+  border-radius: 9999px;
+  background: linear-gradient(to bottom, #0a3d62, #0a3d62);
+  padding-top: 1.125rem;
+  padding-bottom: 1.125rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+  transition: all 0.3s ease-in-out;
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 255, 255, 0.6),
+    inset 0 1px 3px rgba(255,255,255,0.1),
+    0 2px 5px rgba(0,0,0,0.3);
+}
+.btn-oval:hover {
+  background: linear-gradient(to bottom, #145788, #0a3d62);
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 255, 255, 0.7),
+    inset 0 1px 2px rgba(255,255,255,0.15),
+    0 3px 7px rgba(0,0,0,0.35);
+}
+
+
+  border-radius: 9999px;
+  background-color: #166534;
+  color: white;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+  transition: all 0.2s ease-in-out;
+}
+.btn-agregar-bien:hover {
+  background-color: #14532d;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  transform: translateY(-1px);
+}
+.remove-bien-btn {
+  border-radius: 9999px;
+  background-color: #6b7280; /* gray-500 */
+  color: white;
+  border: none;
+  font-size: 1rem;
+  font-weight: 600;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+.remove-bien-btn:hover {
+  background-color: #374151; /* gray-700 */
+}
+  background: transparent;
+  color: #dc2626;
+  border: none;
+  font-size: 1.2rem;
+  font-weight: bold;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+.remove-bien-btn:hover {
+  background-color: rgba(220, 38, 38, 0.1);
+}
+
+
+.modal-content button {
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.5rem 1.25rem;
+  transition: all 0.2s ease-in-out;
+}
+#cancelPdfDownload {
+  background-color: #6b7280; /* gray-500 */
+  color: white;
+}
+#cancelPdfDownload:hover {
+  background-color: #374151; /* gray-700 */
+}
+#confirmPdfDownload {
+  background-color: #0a3d62;
+  color: white;
+}
+#confirmPdfDownload:hover {
+  background-color: #145788;
+}
+
+.btn-agregar-bien {
+  background-color: #0a3d62 !important;
+  color: white !important;
+  border-radius: 9999px !important;
+  padding: 0.75rem 1.25rem !important;
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  transition: background-color 0.2s ease-in-out !important;
+}
+.btn-agregar-bien:hover {
+  background-color: #145788 !important;
+}
+
+
+
+.btn-secundario {
+  border-radius: 9999px;
+  background-color: #ffffff;
+  color: #0a3d62;
+  font-weight: 600;
+  padding: 0.4rem 1rem;
+  font-size: 0.875rem;
+  border: 2px solid #0a3d62;
+  transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+}
+.btn-secundario:hover {
+  background-color: #0a3d62;
+  color: white;
+}
+  </style>
+ </head>
+ <body class="bg-gray-100 min-h-screen flex items-center justify-center">
+  <div class="bg-[#0a3d62] rounded-2xl shadow-xl w-full max-w-4xl text-center overflow-hidden">
+   <div class="p-4">
+    <img alt="Escudo Santa Cruz" class="mx-auto mb-0" src="escudo.png" style="width: 94px; height: auto;"/>
+    <h1 class="font-bold text-white" style="font-size: 27px;">
+     Poder Judicial de la Provincia de Santa Cruz
+    </h1>
+    <p class="text-white mb-0" style="font-size: 18px;">
+     Calculadora de Tasas de Justicia
+    </p>
+   </div>
+   <div class="bg-white p-8 rounded-b-2xl">
+    <div class="max-w-2xl mx-auto bg-white p-4 sm:p-6 rounded-lg shadow-lg w-full">
+     <p class="bg-blue-50 text-gray-800 p-3 rounded-md text-sm mb-6 border border-blue-200 text-justify">
+      Esta herramienta es una guía informativa. Ante cualquier consulta consulte la
+      <a class="font-bold text-blue-700 hover:underline" href="https://www.jussantacruz.gob.ar/index.php/normativa-juridica/tasas-judiciales" target="_blank">
+       Normativa Oficial y Tarifaria Vigente
+      </a>
+      , 
+            en los estrados de la dependencia Judicial en la que realiza el trámite o al Sector Auditoría y Control de Tasas de Justicia del Excmo. Tribunal de Justicia de la Provincia de Santa Cruz.
+     </p>
+     <div class="input-group">
+      <label class="block mb-1 font-medium">
+       Tasa General por Movimiento Jurisdiccional:
+      </label>
+      <p class="text-green-700 font-bold text-xl sm:text-2xl">
+       $ 5.000,00
+      </p>
+     </div>
+     <div class="input-group">
+      <label class="block mb-1 font-medium" for="tipo">
+       Seleccione el Tipo de Trámite:
+      </label>
+      <select class="w-full p-2 border rounded-md focus:ring-blue-700 focus:border-blue-700" id="tipo">
+       <option value="">
+        -- Seleccione una opción --
+       </option>
+       <option value="alimentos">
+        Demanda por Alimentos
+       </option>
+       <option value="divorcio">
+        Divorcio
+       </option>
+       <option value="ordinario">
+        Ordinario
+       </option>
+       <option value="sucesion">
+        Sucesión
+       </option>
+      </select>
+     </div>
+     <div class="input-group hidden" id="alimentosFields">
+      <label class="block mb-1 font-medium" for="montoCuotaAlimentaria">
+       Monto de Cuota Alimentaria ($):
+      </label>
+      <input class="w-full p-2 border rounded-md focus:ring-blue-700 focus:border-blue-700 mb-4" id="montoCuotaAlimentaria" placeholder="Ingrese el monto de la cuota alimentaria" type="text"/>
+      <label class="block mb-1 font-medium" for="tasaAbonadaAlimentos">
+       Tasa Abonada ($):
+      </label>
+      <input class="w-full p-2 border rounded-md focus:ring-blue-700 focus:border-blue-700" id="tasaAbonadaAlimentos" placeholder="Ingrese el monto de la tasa ya abonada (si aplica)" type="text"/>
+     </div>
+     <div class="hidden" id="sucesionFields">
+      <div class="input-group">
+       <label class="block mb-1 font-medium" for="tasaAbonadaSucesion">
+        Tasa Abonada ($):
+       </label>
+       <input class="w-full p-2 border rounded-md focus:ring-blue-700 focus:border-blue-700" id="tasaAbonadaSucesion" placeholder="Ingrese el monto de la tasa ya abonada (si aplica)" type="text"/>
+      </div>
+      <div id="bienesContainer">
+      </div>
+      <div class="flex justify-start mt-4">
+       <button class="btn-agregar-bien btn-secundario" id="addBienBtn">
+        Agregar Bien
+       </button>
+      </div>
+     </div>
+     <div class="hidden" id="ordinarioFields">
+      <div class="input-group">
+       <label class="block mb-1 font-medium" for="tasaAbonadaOrdinario">
+        Tasa Abonada ($):
+       </label>
+       <input class="w-full p-2 border rounded-md focus:ring-blue-700 focus:border-blue-700" id="tasaAbonadaOrdinario" placeholder="Ingrese el monto de la tasa ya abonada (si aplica)" type="text"/>
+      </div>
+      <div class="input-group" id="monedaOrdinarioContainer">
+       <label class="block mb-1 font-medium" for="monedaOrdinario">
+        Moneda:
+       </label>
+       <select class="w-full p-2 border rounded-md focus:ring-blue-700 focus:border-blue-700" id="monedaOrdinario">
+        <option value="">
+         -- Seleccione la moneda --
+        </option>
+        <option value="pesos">
+         Pesos ($)
+        </option>
+        <option value="dolares">
+         Dólares (U$S)
+        </option>
+       </select>
+       <div class="input-group mt-3 hidden" id="cotizacionDolarOrdinarioContainer">
+        <label class="block mb-1 font-medium">
+         Cotización Dólar (Compra Banco Nación):
+        </label>
+        <div class="cotizacion-input-group">
+         <div class="flex-grow">
+          <input class="w-full p-2 border rounded-md focus:ring-blue-700 focus:border-blue-700" id="cotizacionDolarOrdinario" placeholder="Ingrese la cotización actual" type="text"/>
+         </div>
+         <div class="flex-shrink-0">
+          <button class="bg-blue-700 text-white px-3 py-2 rounded-md hover:bg-blue-800 transition duration-200 ease-in-out text-sm whitespace-nowrap sub-button" id="btnCotizacionBNAOrdinario" type="button">
+           Cotización Dolar BNA
+          </button>
+         </div>
+        </div>
+       </div>
+      </div>
+      <div class="input-group">
+       <label class="block mb-1 font-medium" for="montoDemandaOrdinario">
+        Monto de la Demanda:
+       </label>
+       <input class="w-full p-2 border rounded-md focus:ring-blue-700 focus:border-blue-700" id="montoDemandaOrdinario" placeholder="Ingrese el monto de la demanda" type="text"/>
+      </div>
+     </div>
+     <div class="hidden" id="divorcioFields">
+      <div class="input-group">
+       <p class="text-gray-600">
+        Aquí irán los campos específicos para "Divorcio".
+       </p>
+       <label class="block mb-1 font-medium" for="tasaAbonadaDivorcio">
+        Tasa Abonada ($):
+       </label>
+       <input class="w-full p-2 border rounded-md focus:ring-blue-700 focus:border-blue-700" id="tasaAbonadaDivorcio" placeholder="Ingrese el monto de la tasa ya abonada (si aplica)" type="text"/>
+      </div>
+      <div id="bienesDivorcioContainer">
+      </div>
+      <div class="flex justify-start mt-4">
+       <button class="btn-agregar-bien btn-secundario" id="addBienDivorcioBtn">
+        Agregar Bien
+       </button>
+      </div>
+     </div>
+     <div class="grid grid-cols-4 gap-2 mt-6">
+      <button class="btn-oval" id="btnCalcular">
+       Calcular Tasa
+      </button>
+      <button class="btn-oval" id="btnBorrar">
+       Borrar Campos
+      </button>
+      <button class="btn-oval" id="btnDescargarPDF">
+       Descargar PDF
+      </button>
+      <button class="btn-oval" id="btnGenerarFormulario">
+       Generar Formulario
+      </button>
+     </div>
+     <div class="error-message mt-6 p-4 bg-red-100 border border-red-400 text-red-800 rounded-md hidden" id="mensajeError">
+     </div>
+     <div class="result-section mt-8 p-6 bg-green-50 border border-green-200 rounded-lg hidden" id="resultado">
+      <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-4 border-b pb-2 border-gray-300">
+       Detalle del Cálculo:
+      </h3>
+      <p class="result-item text-gray-800 mb-2">
+       <strong>
+        Tipo de Trámite:
+       </strong>
+       <span id="tipoTramiteDisplay">
+       </span>
+      </p>
+      <p class="result-item text-gray-800 mb-2">
+       <strong>
+        Tasa General por Movimiento Jurisdiccional:
+       </strong>
+       <span id="tasaGeneralDisplay">
+        $ 5.000,00
+       </span>
+      </p>
+      <div class="mt-4" id="bienesCalculadosDisplay">
+      </div>
+      <p class="result-item text-gray-800 mb-2 hidden" id="tasaAbonadaDisplayContainer">
+       <strong>
+        Tasa Abonada:
+       </strong>
+       <span id="tasaAbonadaDisplay">
+       </span>
+      </p>
+      <p class="result-item text-gray-900 mt-4 text-xl sm:text-2xl font-bold text-blue-700">
+       <strong>
+        Total Tasa de Justicia a Abonar:
+       </strong>
+       <span id="totalTasaDisplay">
+       </span>
+      </p>
+     </div>
+     <div class="text-center text-gray-600 text-xs mt-8 pt-4 border-t border-gray-200">
+      <p>
+       Contacto: Sector Auditoría y Control de Tasas de Justicia
+      </p>
+      <p>
+       Correo electrónico:
+       <a class="text-blue-700 hover:underline" href="mailto:tasasjusticia@jussantacruz.gob.ar">
+        tasasjusticia@jussantacruz.gob.ar
+       </a>
+      </p>
+     </div>
+    </div>
+    <div class="modal hidden" id="pdfNameModal">
+     <div class="modal-content">
+      <h3 class="text-lg font-bold mb-4">
+       Guardar PDF
+      </h3>
+      <div class="mb-4">
+       <label class="block text-gray-700 text-sm font-bold mb-2" for="pdfFileName">
+        Nombre del archivo:
+       </label>
+       <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="pdfFileName" type="text" value="TasaDeJusticia.pdf"/>
+      </div>
+      <div class="flex justify-end gap-3">
+       <button class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" id="cancelPdfDownload">
+        Cancelar
+       </button>
+       <button class="bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" id="confirmPdfDownload">
+        Descargar
+       </button>
+      </div>
+     </div>
+    </div>
+    <script>
+     document.addEventListener('DOMContentLoaded', () => {
+            const TASA_GENERAL_MOVIMIENTO_JURISDICCIONAL = 5000.00;
+            const TASA_SUCESION_PROPIO = 0.012;
+            const TASA_SUCESION_GANANCIAL_FACTOR = 0.5;
+            const TASA_SUCESION_BASE = 0.012;
+            const TASA_TRACTO_ABREVIADO = 0.012;
+            const MINIMO_SUCESION = 25000.00;
+            const MINIMO_ALIMENTOS = 13000.00;
+            const MINIMO_TOTAL_ORD_DIV = 25000.00; // Mínimo para Ordinario y Divorcio
+            const TASA_ORDINARIO = 0.025;
+
+            const tipoSelect = document.getElementById('tipo');
+            const alimentosFieldsDiv = document.getElementById('alimentosFields');
+            const sucesionFieldsDiv = document.getElementById('sucesionFields');
+            const ordinarioFieldsDiv = document.getElementById('ordinarioFields');
+            const divorcioFieldsDiv = document.getElementById('divorcioFields');
+            const bienesContainer = document.getElementById('bienesContainer');
+            const addBienBtn = document.getElementById('addBienBtn');
+
+            const montoCuotaAlimentariaInput = document.getElementById('montoCuotaAlimentaria');
+            const tasaAbonadaAlimentosInput = document.getElementById('tasaAbonadaAlimentos');
+            const tasaAbonadaSucesionInput = document.getElementById('tasaAbonadaSucesion');
+            const tasaAbonadaOrdinarioInput = document.getElementById('tasaAbonadaOrdinario');
+            const tasaAbonadaDivorcioInput = document.getElementById('tasaAbonadaDivorcio');
+            const monedaOrdinarioSelect = document.getElementById('monedaOrdinario');
+            const cotizacionDolarOrdinarioContainer = document.getElementById('cotizacionDolarOrdinarioContainer');
+            const cotizacionDolarOrdinarioInput = document.getElementById('cotizacionDolarOrdinario');
+            const btnCotizacionBNAOrdinario = document.getElementById('btnCotizacionBNAOrdinario');
+            const montoDemandaOrdinarioInput = document.getElementById('montoDemandaOrdinario');
+            const bienesDivorcioContainer = document.getElementById('bienesDivorcioContainer');
+            const addBienDivorcioBtn = document.getElementById('addBienDivorcioBtn');
+
+            const btnCalcular = document.getElementById('btnCalcular');
+            const btnBorrar = document.getElementById('btnBorrar');
+            const btnDescargarPDF = document.getElementById('btnDescargarPDF');
+            const btnGenerarFormulario = document.getElementById('btnGenerarFormulario');
+            const resultadoDiv = document.getElementById('resultado');
+            const mensajeErrorDiv = document.getElementById('mensajeError');
+
+            const tipoTramiteDisplay = document.getElementById('tipoTramiteDisplay');
+            const tasaGeneralDisplay = document.getElementById('tasaGeneralDisplay');
+            const bienesCalculadosDisplay = document.getElementById('bienesCalculadosDisplay');
+            const tasaAbonadaDisplayContainer = document.getElementById('tasaAbonadaDisplayContainer');
+            const tasaAbonadaDisplay = document.getElementById('tasaAbonadaDisplay');
+            const totalTasaDisplay = document.getElementById('totalTasaDisplay');
+
+            const pdfNameModal = document.getElementById('pdfNameModal');
+            const pdfFileNameInput = document.getElementById('pdfFileName');
+            const cancelPdfDownloadBtn = document.getElementById('cancelPdfDownload');
+            const confirmPdfDownloadBtn = document.getElementById('confirmPdfDownload');
+
+            let ultimaTasaCalculada = null;
+
+            const formatCurrency = (number) => {
+                if (typeof number !== 'number' || isNaN(number)) {
+                    return '$ 0,00';
+                }
+                return `$ ${number.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            };
+
+            const unformatInput = (str) => {
+                if (typeof str !== 'string' || str.trim() === '') {
+                    return 0;
+                }
+                const cleaned = str.replace(/\./g, '').replace(/,/g, '.');
+                return parseFloat(cleaned);
+            };
+
+            const formatAndSetInput = (inputElement) => {
+                let value = inputElement.value;
+                const cursorPosition = inputElement.selectionStart;
+                let cleanedValue = value.replace(/[^\d,]/g, '');
+                const parts = cleanedValue.split(',');
+                if (parts.length > 2) {
+                    cleanedValue = parts[0] + ',' + parts.slice(1).join('');
+                }
+                const numericValue = parseFloat(cleanedValue.replace(',', '.'));
+
+                if (!isNaN(numericValue)) {
+                    let formattedValue = numericValue.toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+                    if (cleanedValue.includes(',')) {
+                        const decimalPart = cleanedValue.split(',')[1];
+                        if (decimalPart !== undefined) {
+                            formattedValue = formattedValue.split(',')[0] + ',' + decimalPart;
+                        } else {
+                            formattedValue = formattedValue.split(',')[0] + ',';
+                        }
+                    }
+                    inputElement.value = formattedValue;
+                    const newCursorPosition = cursorPosition + (formattedValue.length - value.length);
+                    inputElement.setSelectionRange(newCursorPosition, newCursorPosition);
+                } else {
+                    inputElement.value = cleanedValue;
+                }
+            };
+
+            const handleDotToCommaConversion = (event) => {
+                if (event.key === '.' || event.key === 'Decimal') {
+                    event.preventDefault();
+                    const inputElement = event.target;
+                    const start = inputElement.selectionStart;
+                    const end = inputElement.selectionEnd;
+                    const value = inputElement.value;
+                    inputElement.value = value.substring(0, start) + ',' + value.substring(end);
+                    inputElement.selectionStart = inputElement.selectionEnd = start + 1;
+                    inputElement.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+            };
+
+            function getCleanOptionText(selectElement) {
+                const selectedOption = selectElement.options[selectElement.selectedIndex];
+                return selectedOption.text.replace(/\s*\(.*?\)\s*/g, '').trim();
+            }
+
+            const renumberBienes = () => {
+                const bienes = bienesContainer.querySelectorAll('.bien-container');
+                bienes.forEach((bienDiv, index) => {
+                    const bienNumber = index + 1;
+                    const titleElement = bienDiv.querySelector('h4');
+                    if (titleElement) {
+                        titleElement.textContent = `Bien #${bienNumber}`;
+                    }
+                    const removeBtn = bienDiv.querySelector('.remove-bien-btn');
+                    if (removeBtn) {
+                        removeBtn.dataset.bienId = bienDiv.dataset.uniqueId;
+                    }
+                });
+            };
+
+            const renumberBienesDivorcio = () => {
+                const bienes = bienesDivorcioContainer.querySelectorAll('.bien-divorcio-container');
+                bienes.forEach((bienDiv, index) => {
+                    const bienNumber = index + 1;
+                    const titleElement = bienDiv.querySelector('h4');
+                    if (titleElement) {
+                        titleElement.textContent = `Bien #${bienNumber}`;
+                    }
+                });
+            };
+
+            const resetearCampos = () => {
+                tipoSelect.value = '';
+                alimentosFieldsDiv.classList.add('hidden');
+                montoCuotaAlimentariaInput.value = '';
+                tasaAbonadaAlimentosInput.value = '0,00';
+                sucesionFieldsDiv.classList.add('hidden');
+                tasaAbonadaSucesionInput.value = '0,00';
+                addBienBtn.closest('.flex.justify-start.mt-4').classList.add('hidden');
+                bienesContainer.innerHTML = '';
+                ordinarioFieldsDiv.classList.add('hidden');
+                tasaAbonadaOrdinarioInput.value = '0,00';
+                monedaOrdinarioSelect.value = '';
+                cotizacionDolarOrdinarioContainer.classList.add('hidden');
+                cotizacionDolarOrdinarioInput.value = '';
+                montoDemandaOrdinarioInput.value = '';
+                divorcioFieldsDiv.classList.add('hidden');
+                tasaAbonadaDivorcioInput.value = '0,00';
+                bienesDivorcioContainer.innerHTML = '';
+                addBienDivorcioBtn.closest('.flex.justify-start.mt-4').classList.add('hidden');
+                resultadoDiv.classList.add('hidden');
+                mensajeErrorDiv.classList.add('hidden');
+                mensajeErrorDiv.innerText = '';
+                ultimaTasaCalculada = null;
+            };
+
+            [
+                montoCuotaAlimentariaInput,
+                tasaAbonadaAlimentosInput,
+                tasaAbonadaSucesionInput,
+                tasaAbonadaOrdinarioInput,
+                tasaAbonadaDivorcioInput,
+                cotizacionDolarOrdinarioInput,
+                montoDemandaOrdinarioInput
+            ].forEach(input => {
+                input.addEventListener('keydown', handleDotToCommaConversion);
+                input.addEventListener('input', (event) => formatAndSetInput(event.target));
+                input.addEventListener('blur', (event) => {
+                    const value = unformatInput(event.target.value);
+                    if (!isNaN(value)) {
+                        event.target.value = value.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    } else if (event.target.value !== '') {
+                        event.target.value = '';
+                    }
+                });
+                input.addEventListener('focus', (event) => {
+                    const value = unformatInput(event.target.value);
+                    if (!isNaN(value)) {
+                        event.target.value = value.toString();
+                    } else if (event.target.value !== '') {
+                        input.value = '';
+                    }
+                });
+            });
+
+            if (btnCotizacionBNAOrdinario) {
+                btnCotizacionBNAOrdinario.addEventListener('click', () => {
+                    window.open('https://www.bna.com.ar/Personas', '_blank');
+                });
+            }
+
+            monedaOrdinarioSelect.addEventListener('change', () => {
+                const val = monedaOrdinarioSelect.value;
+                cotizacionDolarOrdinarioContainer.classList.add('hidden');
+                cotizacionDolarOrdinarioInput.value = '';
+                if (val === 'dolares') {
+                    cotizacionDolarOrdinarioContainer.classList.remove('hidden');
+                }
+            });
+
+
+            const addBienFields = () => {
+                const uniqueBienId = `bien-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+                const bienDiv = document.createElement('div');
+                bienDiv.classList.add('bien-container');
+                bienDiv.dataset.uniqueId = uniqueBienId;
+                bienDiv.innerHTML = `
+                    <button type="button" class="remove-bien-btn" data-bien-id="${uniqueBienId}">x</button>
+                    <h4 class="font-semibold mb-3 text-gray-700">Bien #N/A</h4>
+                    <div class="input-group">
+                        <label for="${uniqueBienId}-tipoSucesion" class="block mb-1 font-medium">Tipo de Bien:</label>
+                        <select id="${uniqueBienId}-tipoSucesion" class="w-full p-2 border rounded-md focus:ring-blue-700 focus:border-blue-700">
+                            <option value="">-- Seleccione una opción --</option>
+                            <option value="sumaDinero">Suma de Dinero</option>
+                            <option value="automotor">Automotor</option>
+                            <option value="inmueble">Inmueble</option>
+                            <option value="sociedad">Participación en Sociedad</option>
+                        </select>
+                    </div>
+                    <div id="${uniqueBienId}-valuacionDNRPAContainer" class="input-group hidden">
+                        <label class="block mb-1 font-medium">Valuación Fiscal DNRPA:</label>
+                        <div class="valuacion-input-group">
+                            <div class="flex-grow"></div>
+                            <div class="flex-shrink-0">
+                                <button type="button" id="${uniqueBienId}-btnValuacionDNRPA" class="bg-blue-700 text-white px-3 py-2 rounded-md hover:bg-blue-800 transition duration-200 ease-in-out text-sm whitespace-nowrap sub-button">Valuación Fiscal DNRPA</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="${uniqueBienId}-monedaCotizacionContainer" class="input-group hidden">
+                        <label for="${uniqueBienId}-monedaSelect" class="block mb-1 font-medium">Moneda:</label>
+                        <select id="${uniqueBienId}-monedaSelect" class="w-full p-2 border rounded-md focus:ring-blue-700 focus:border-blue-700">
+                            <option value="">-- Seleccione la moneda --</option>
+                            <option value="pesos">Pesos ($)</option>
+                            <option value="dolares">Dólares (U$S)</option>
+                        </select>
+                        <div id="${uniqueBienId}-cotizacionDolarContainer" class="input-group mt-3 hidden">
+                            <label class="block mb-1 font-medium">Cotización Dólar (Compra Banco Nación):</label>
+                            <div class="cotizacion-input-group">
+                                <div class="flex-grow">
+                                    <input type="text" id="${uniqueBienId}-cotizacionDolarInput" placeholder="Ingrese la cotización actual" class="w-full p-2 border rounded-md focus:ring-blue-700 focus:border-blue-700">
+                                </div>
+                                <div class="flex-shrink-0">
+                                    <button type="button" id="${uniqueBienId}-btnCotizacionBNA" class="bg-blue-700 text-white px-3 py-2 rounded-md hover:bg-blue-800 transition duration-200 ease-in-out text-sm whitespace-nowrap sub-button">Cotización Dolar BNA</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="${uniqueBienId}-situacionContainer" class="input-group hidden">
+                        <label for="${uniqueBienId}-situacionSelect" class="block mb-1 font-medium">Situación:</label>
+                        <select id="${uniqueBienId}-situacionSelect" class="w-full p-2 border rounded-md focus:ring-blue-700 focus:border-blue-700">
+                            <option value="">-- Seleccione la situación --</option>
+                            <option value="sucesion">Sucesión</option>
+                            <option value="tractoAbreviado">Tracto Abreviado</option>
+                        </select>
+                    </div>
+                    <div id="${uniqueBienId}-bienContainer" class="input-group hidden">
+                        <label for="${uniqueBienId}-bienSelect" class="block mb-1 font-medium">Bien:</label>
+                        <select id="${uniqueBienId}-bienSelect" class="w-full p-2 border rounded-md focus:ring-blue-700 focus:border-blue-700">
+                            <option value="">-- Seleccione el tipo de bien --</option>
+                            <option value="ganancial">Ganancial</option>
+                            <option value="propio">Propio</option>
+                        </select>
+                    </div>
+                    <div id="${uniqueBienId}-valuacionFiscalInputContainer" class="input-group hidden">
+                        <label for="${uniqueBienId}-valuacionFiscalInput" class="block mb-1 font-medium">Valuación Fiscal/Tasación ($):</label>
+                        <input type="text" id="${uniqueBienId}-valuacionFiscalInput" placeholder="Ingrese la valuación fiscal o tasación" class="w-full p-2 border rounded-md focus:ring-blue-700 focus:border-blue-700">
+                    </div>
+                    <div id="${uniqueBienId}-montoOperacionInputContainer" class="input-group hidden">
+                        <label for="${uniqueBienId}-montoOperacionInput" class="block mb-1 font-medium">Monto de la Operación ($):</label>
+                        <input type="text" id="${uniqueBienId}-montoOperacionInput" placeholder="Ingrese el monto de la operación" class="w-full p-2 border rounded-md focus:ring-blue-700 focus:border-blue-700">
+                    </div>
+                    <div id="${uniqueBienId}-valorBienesSumaDineroContainer" class="input-group hidden">
+                        <label for="${uniqueBienId}-valorBienesSumaDineroInput" class="block mb-1 font-medium">Valor de Bienes:</label>
+                        <input type="text" id="${uniqueBienId}-valorBienesSumaDineroInput" placeholder="Ingrese el valor total de los bienes" class="w-full p-2 border rounded-md focus:ring-blue-700 focus:border-blue-700">
+                    </div>
+                    <div id="${uniqueBienId}-patrimonioSociedadContainer" class="input-group hidden">
+                        <label for="${uniqueBienId}-patrimonioSociedadInput" class="block mb-1 font-medium">Patrimonio Neto ($):</label>
+                        <input type="text" id="${uniqueBienId}-patrimonioSociedadInput" placeholder="Ingrese el patrimonio neto" class="w-full p-2 border rounded-md focus:ring-blue-700 focus:border-blue-700">
+                    </div>
+                    <div id="${uniqueBienId}-porcentajeSociedadContainer" class="input-group hidden">
+                        <label for="${uniqueBienId}-porcentajeSociedadInput" class="block mb-1 font-medium">Porcentaje de Participación (%):</label>
+                        <input type="text" id="${uniqueBienId}-porcentajeSociedadInput" placeholder="Ingrese el porcentaje" class="w-full p-2 border rounded-md focus:ring-blue-700 focus:border-blue-700">
+                    </div>
+                    <div id="${uniqueBienId}-producidoSociedadContainer" class="input-group hidden">
+                        <label for="${uniqueBienId}-producidoSociedadInput" class="block mb-1 font-medium">Producido ($):</label>
+                        <input type="text" id="${uniqueBienId}-producidoSociedadInput" placeholder="Ingrese el producido (puede ser 0)" value="0" class="w-full p-2 border rounded-md focus:ring-blue-700 focus:border-blue-700">
+                    </div>`;
+                bienesContainer.appendChild(bienDiv);
+                bienDiv.querySelector('.remove-bien-btn').addEventListener('click', (e)=>{ e.target.closest('.bien-container').remove(); renumberBienes(); });
+                attachBienEventListeners(uniqueBienId);
+                renumberBienes();
+            };
+            const attachBienEventListeners = (uniqueBienId) => {
+                const tipoSucesionSelect = document.getElementById(`${uniqueBienId}-tipoSucesion`);
+                const valuacionDNRPAContainer = document.getElementById(`${uniqueBienId}-valuacionDNRPAContainer`);
+                const btnValuacionDNRPA = document.getElementById(`${uniqueBienId}-btnValuacionDNRPA`);
+                const monedaCotizacionContainer = document.getElementById(`${uniqueBienId}-monedaCotizacionContainer`);
+                const monedaSelect = document.getElementById(`${uniqueBienId}-monedaSelect`);
+                const cotizacionDolarContainer = document.getElementById(`${uniqueBienId}-cotizacionDolarContainer`);
+                const btnCotizacionBNA = document.getElementById(`${uniqueBienId}-btnCotizacionBNA`);
+                const situacionContainer = document.getElementById(`${uniqueBienId}-situacionContainer`);
+                const situacionSelect = document.getElementById(`${uniqueBienId}-situacionSelect`);
+                const bienContainer = document.getElementById(`${uniqueBienId}-bienContainer`);
+                const bienSelect = document.getElementById(`${uniqueBienId}-bienSelect`);
+                const valuacionFiscalInputContainer = document.getElementById(`${uniqueBienId}-valuacionFiscalInputContainer`);
+                const montoOperacionInputContainer = document.getElementById(`${uniqueBienId}-montoOperacionInputContainer`);
+                const valorBienesSumaDineroContainer = document.getElementById(`${uniqueBienId}-valorBienesSumaDineroContainer`);
+                const patrimonioSociedadContainer = document.getElementById(`${uniqueBienId}-patrimonioSociedadContainer`);
+                const porcentajeSociedadContainer = document.getElementById(`${uniqueBienId}-porcentajeSociedadContainer`);
+                const producidoSociedadContainer = document.getElementById(`${uniqueBienId}-producidoSociedadContainer`);
+
+                const numericInputs = [
+                    document.getElementById(`${uniqueBienId}-cotizacionDolarInput`),
+                    document.getElementById(`${uniqueBienId}-valuacionFiscalInput`),
+                    document.getElementById(`${uniqueBienId}-montoOperacionInput`),
+                    document.getElementById(`${uniqueBienId}-valorBienesSumaDineroInput`),
+                    document.getElementById(`${uniqueBienId}-patrimonioSociedadInput`),
+                    document.getElementById(`${uniqueBienId}-porcentajeSociedadInput`),
+                    document.getElementById(`${uniqueBienId}-producidoSociedadInput`)
+                ];
+
+                numericInputs.forEach(input => {
+                    if (input) {
+                        input.addEventListener('keydown', handleDotToCommaConversion);
+                        input.addEventListener('input', (event) => formatAndSetInput(event.target));
+                        input.addEventListener('blur', (event) => {
+                            const value = unformatInput(event.target.value);
+                            if (!isNaN(value)) {
+                                event.target.value = value.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                            } else if (event.target.value !== '') {
+                                event.target.value = '';
+                            }
+                        });
+                        input.addEventListener('focus', (event) => {
+                            const value = unformatInput(event.target.value);
+                            if (!isNaN(value)) {
+                                event.target.value = value.toString();
+                            } else if (event.target.value !== '') {
+                                input.value = '';
+                            }
+                        });
+                    }
+                });
+
+                const resetBienSpecificFields = () => {
+                    valorBienesSumaDineroContainer.classList.add('hidden');
+                    document.getElementById(`${uniqueBienId}-valorBienesSumaDineroInput`).value = '';
+                    monedaCotizacionContainer.classList.add('hidden');
+                    monedaSelect.value = '';
+                    cotizacionDolarContainer.classList.add('hidden');
+                    document.getElementById(`${uniqueBienId}-cotizacionDolarInput`).value = '';
+                    valuacionDNRPAContainer.classList.add('hidden');
+                    situacionContainer.classList.add('hidden');
+                    situacionSelect.value = '';
+                    bienContainer.classList.add('hidden');
+                    bienSelect.value = '';
+                    valuacionFiscalInputContainer.classList.add('hidden');
+                    document.getElementById(`${uniqueBienId}-valuacionFiscalInput`).value = '';
+                    montoOperacionInputContainer.classList.add('hidden');
+                    document.getElementById(`${uniqueBienId}-montoOperacionInput`).value = '';
+                    patrimonioSociedadContainer.classList.add('hidden');
+                    document.getElementById(`${uniqueBienId}-patrimonioSociedadInput`).value = '';
+                    porcentajeSociedadContainer.classList.add('hidden');
+                    document.getElementById(`${uniqueBienId}-porcentajeSociedadInput`).value = '';
+                    producidoSociedadContainer.classList.add('hidden');
+                    document.getElementById(`${uniqueBienId}-producidoSociedadInput`).value = '0';
+
+                    numericInputs.forEach(input => {
+                        if (input) {
+                            const value = unformatInput(input.value);
+                            if (!isNaN(value)) {
+                                input.value = value.toString();
+                            } else {
+                                input.value = '';
+                            }
+                        }
+                    });
+                };
+
+                tipoSucesionSelect.addEventListener('change', () => {
+                    const tipoSucesion = tipoSucesionSelect.value;
+                    resetBienSpecificFields();
+                    if (tipoSucesion === 'sumaDinero') {
+                        valorBienesSumaDineroContainer.classList.remove('hidden');
+                        monedaCotizacionContainer.classList.remove('hidden');
+                    } else if (tipoSucesion === 'automotor') {
+                        valuacionDNRPAContainer.classList.remove('hidden');
+                        situacionContainer.classList.remove('hidden');
+                    } else if (tipoSucesion === 'inmueble') {
+                        situacionContainer.classList.remove('hidden');
+                    } else if (tipoSucesion === 'sociedad') {
+                        patrimonioSociedadContainer.classList.remove('hidden');
+                        porcentajeSociedadContainer.classList.remove('hidden');
+                        producidoSociedadContainer.classList.remove('hidden');
+                    }
+                });
+
+                if (btnValuacionDNRPA) {
+                    btnValuacionDNRPA.addEventListener('click', () => {
+                        window.open('https://www.dnrpa.gov.ar/portal_dnrpa/valuaciones2.php', '_blank');
+                    });
+                }
+                if (btnCotizacionBNA) {
+                     btnCotizacionBNA.addEventListener('click', () => {
+                        window.open('https://www.bna.com.ar/Personas', '_blank');
+                    });
+                }
+
+                monedaSelect.addEventListener('change', () => {
+                    const selectedMoneda = monedaSelect.value;
+                    cotizacionDolarContainer.classList.add('hidden');
+                    document.getElementById(`${uniqueBienId}-cotizacionDolarInput`).value = '';
+                    if (selectedMoneda === 'dolares') {
+                        cotizacionDolarContainer.classList.remove('hidden');
+                    }
+                });
+
+                situacionSelect.addEventListener('change', () => {
+                    const selectedSituacion = situacionSelect.value;
+                    bienContainer.classList.add('hidden');
+                    bienSelect.value = '';
+                    valuacionFiscalInputContainer.classList.add('hidden');
+                    document.getElementById(`${uniqueBienId}-valuacionFiscalInput`).value = '';
+                    montoOperacionInputContainer.classList.add('hidden');
+                    document.getElementById(`${uniqueBienId}-montoOperacionInput`).value = '';
+                    if (selectedSituacion === 'sucesion') {
+                        bienContainer.classList.remove('hidden');
+                    } else if (selectedSituacion === 'tractoAbreviado') {
+                        montoOperacionInputContainer.classList.remove('hidden');
+                        valuacionFiscalInputContainer.classList.remove('hidden');
+                    }
+                });
+
+                bienSelect.addEventListener('change', () => {
+                    const selectedBien = bienSelect.value;
+                    valuacionFiscalInputContainer.classList.add('hidden');
+                    document.getElementById(`${uniqueBienId}-valuacionFiscalInput`).value = '';
+                    if (selectedBien === 'ganancial' || selectedBien === 'propio') {
+                        valuacionFiscalInputContainer.classList.remove('hidden');
+                    }
+                });
+            };
+
+            const addBienDivorcioFields = () => {
+                const uniqueId = `bien-div-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+                const div = document.createElement('div');
+                div.classList.add('bien-divorcio-container', 'bien-container');
+                div.dataset.uniqueId = uniqueId;
+                div.innerHTML = `
+                    <button type="button" class="remove-bien-btn" data-bien-id="${uniqueId}">x</button>
+                    <h4 class="font-semibold mb-3 text-gray-700">Bien #N/A</h4>
+                    <div class="input-group">
+                        <label for="${uniqueId}-tipo" class="block mb-1 font-medium">Tipo de Bien:</label>
+                        <select id="${uniqueId}-tipo" class="w-full p-2 border rounded-md focus:ring-blue-700 focus:border-blue-700">
+                            <option value="">-- Seleccione una opción --</option>
+                            <option value="registrable">Bien Registrable</option>
+                            <option value="sociedad">Participación en Sociedad</option>
+                        </select>
+                    </div>
+                    <div id="${uniqueId}-valorContainer" class="input-group hidden">
+                        <label for="${uniqueId}-valor" class="block mb-1 font-medium">Valor del Bien ($):</label>
+                        <input type="text" id="${uniqueId}-valor" class="w-full p-2 border rounded-md focus:ring-blue-700 focus:border-blue-700">
+                    </div>
+                    <div id="${uniqueId}-patrimonioContainer" class="input-group hidden">
+                        <label for="${uniqueId}-patrimonio" class="block mb-1 font-medium">Patrimonio Neto ($):</label>
+                        <input type="text" id="${uniqueId}-patrimonio" class="w-full p-2 border rounded-md focus:ring-blue-700 focus:border-blue-700">
+                    </div>
+                    <div id="${uniqueId}-porcentajeContainer" class="input-group hidden">
+                        <label for="${uniqueId}-porcentaje" class="block mb-1 font-medium">Porcentaje de Participación (%):</label>
+                        <input type="text" id="${uniqueId}-porcentaje" class="w-full p-2 border rounded-md focus:ring-blue-700 focus:border-blue-700">
+                    </div>
+                    <div id="${uniqueId}-producidoContainer" class="input-group hidden">
+                        <label for="${uniqueId}-producido" class="block mb-1 font-medium">Producido ($):</label>
+                        <input type="text" id="${uniqueId}-producido" value="0" class="w-full p-2 border rounded-md focus:ring-blue-700 focus:border-blue-700">
+                    </div>`;
+                bienesDivorcioContainer.appendChild(div);
+                div.querySelector('.remove-bien-btn').addEventListener('click', (e)=>{ e.target.closest('.bien-divorcio-container').remove(); renumberBienesDivorcio(); });
+                attachBienDivorcioEventListeners(uniqueId);
+                renumberBienesDivorcio();
+            };
+
+            const attachBienDivorcioEventListeners = (uniqueId) => {
+                const tipoSelectDiv = document.getElementById(`${uniqueId}-tipo`);
+                const valorContainer = document.getElementById(`${uniqueId}-valorContainer`);
+                const valorInput = document.getElementById(`${uniqueId}-valor`);
+                const patrimonioContainer = document.getElementById(`${uniqueId}-patrimonioContainer`);
+                const patrimonioInput = document.getElementById(`${uniqueId}-patrimonio`);
+                const porcentajeContainer = document.getElementById(`${uniqueId}-porcentajeContainer`);
+                const porcentajeInput = document.getElementById(`${uniqueId}-porcentaje`);
+                const producidoContainer = document.getElementById(`${uniqueId}-producidoContainer`);
+                const producidoInput = document.getElementById(`${uniqueId}-producido`);
+
+                [valorInput, patrimonioInput, porcentajeInput, producidoInput].forEach(inp => {
+                    inp.addEventListener('keydown', handleDotToCommaConversion);
+                    inp.addEventListener('input', (e)=>formatAndSetInput(e.target));
+                    inp.addEventListener('blur', (e)=>{
+                        const v = unformatInput(e.target.value);
+                        if (!isNaN(v)) {
+                            e.target.value = v.toLocaleString('es-AR', {minimumFractionDigits:2, maximumFractionDigits:2});
+                        } else if (e.target.value !== '') { e.target.value = ''; }
+                    });
+                    inp.addEventListener('focus', (e)=>{
+                        const v = unformatInput(e.target.value);
+                        if (!isNaN(v)) e.target.value = v.toString(); else if (e.target.value !== '') inp.value='';
+                    });
+                });
+
+                tipoSelectDiv.addEventListener('change', ()=>{
+                    const val = tipoSelectDiv.value;
+                    valorContainer.classList.add('hidden');
+                    patrimonioContainer.classList.add('hidden');
+                    porcentajeContainer.classList.add('hidden');
+                    producidoContainer.classList.add('hidden');
+                    valorInput.value = '';
+                    patrimonioInput.value = '';
+                    porcentajeInput.value = '';
+                    producidoInput.value = '0';
+                    if (val === 'registrable') {
+                        valorContainer.classList.remove('hidden');
+                    } else if (val === 'sociedad') {
+                        patrimonioContainer.classList.remove('hidden');
+                        porcentajeContainer.classList.remove('hidden');
+                        producidoContainer.classList.remove('hidden');
+                    }
+                });
+            };
+            tipoSelect.addEventListener('change', () => {
+                const selectedTipo = tipoSelect.value;
+                alimentosFieldsDiv.classList.add('hidden');
+                montoCuotaAlimentariaInput.value = '';
+                tasaAbonadaAlimentosInput.value = '0,00';
+                sucesionFieldsDiv.classList.add('hidden');
+                tasaAbonadaSucesionInput.value = '0,00';
+                addBienBtn.closest('.flex.justify-start.mt-4').classList.add('hidden');
+                bienesContainer.innerHTML = '';
+                ordinarioFieldsDiv.classList.add('hidden');
+                tasaAbonadaOrdinarioInput.value = '0,00';
+                monedaOrdinarioSelect.value = '';
+                cotizacionDolarOrdinarioContainer.classList.add('hidden');
+                cotizacionDolarOrdinarioInput.value = '';
+                montoDemandaOrdinarioInput.value = '';
+                divorcioFieldsDiv.classList.add('hidden');
+                tasaAbonadaDivorcioInput.value = '0,00';
+                resultadoDiv.classList.add('hidden');
+                mensajeErrorDiv.classList.add('hidden');
+                mensajeErrorDiv.innerText = '';
+                ultimaTasaCalculada = null;
+
+                if (selectedTipo === 'alimentos') {
+                    alimentosFieldsDiv.classList.remove('hidden');
+                } else if (selectedTipo === 'sucesion') {
+                    sucesionFieldsDiv.classList.remove('hidden');
+                    addBienBtn.closest('.flex.justify-start.mt-4').classList.remove('hidden');
+                    addBienFields();
+                } else if (selectedTipo === 'ordinario') {
+                    ordinarioFieldsDiv.classList.remove('hidden');
+                } else if (selectedTipo === 'divorcio') {
+                    divorcioFieldsDiv.classList.remove('hidden');
+                    addBienDivorcioBtn.closest('.flex.justify-start.mt-4').classList.remove('hidden');
+                    addBienDivorcioFields();
+                }
+            });
+
+            addBienBtn.addEventListener('click', addBienFields);
+            addBienDivorcioBtn.addEventListener('click', addBienDivorcioFields);
+
+            btnCalcular.addEventListener('click', () => {
+                const selectedTipo = tipoSelect.value;
+                let totalTasaEspecifica = 0;
+                let error = '';
+                let detallesBienesCalculados = [];
+                let tasaAbonada = 0;
+                let minimoTotalAplicado = 0;
+                resultadoDiv.classList.add('hidden');
+                mensajeErrorDiv.classList.add('hidden');
+                mensajeErrorDiv.innerText = '';
+                ultimaTasaCalculada = null;
+                bienesCalculadosDisplay.innerHTML = '';
+                tasaAbonadaDisplayContainer.classList.add('hidden');
+
+                if (!selectedTipo) {
+                    error = 'Por favor, seleccione un Tipo de Trámite.';
+                } else if (selectedTipo === 'alimentos') {
+                    const montoCuotaAlimentaria = unformatInput(montoCuotaAlimentariaInput.value);
+                    tasaAbonada = unformatInput(tasaAbonadaAlimentosInput.value);
+                    if (isNaN(montoCuotaAlimentaria) || montoCuotaAlimentaria <= 0) {
+                        error = 'Por favor, ingrese un Monto de Cuota Alimentaria válido y positivo.';
+                    } else if (isNaN(tasaAbonada) || tasaAbonada < 0) {
+                        error = 'Por favor, ingrese un valor válido para Tasa Abonada (puede ser 0).';
+                    }
+                    if (!error) {
+                        const porcentajeAplicado = 0.288;
+                        const tasaCalculadaPorPorcentaje = montoCuotaAlimentaria * porcentajeAplicado;
+                        totalTasaEspecifica = Math.max(tasaCalculadaPorPorcentaje, MINIMO_ALIMENTOS);
+                        let montoMinimoAplicado = 0;
+                        if (totalTasaEspecifica === MINIMO_ALIMENTOS && tasaCalculadaPorPorcentaje < MINIMO_ALIMENTOS) {
+                             montoMinimoAplicado = MINIMO_ALIMENTOS;
+                        }
+                        detallesBienesCalculados.push({
+                            nombre: "Cuota Alimentaria",
+                            montoOriginal: montoCuotaAlimentaria,
+                            montoEnPesosParaCalculo: montoCuotaAlimentaria,
+                            porcentajeAplicado: "1.2% sobre 24 meses de cuota fijada",
+                            tasaCalculada: totalTasaEspecifica,
+                            minimoAplicado: montoMinimoAplicado,
+                            tipo: "Alimentos",
+                            tipoBien: ""
+                        });
+                    }
+                } else if (selectedTipo === 'sucesion') {
+                    tasaAbonada = unformatInput(tasaAbonadaSucesionInput.value);
+                    if (isNaN(tasaAbonada) || tasaAbonada < 0) {
+                        error = 'Por favor, ingrese un valor válido para Tasa Abonada (puede ser 0).';
+                    }
+                    if (!error) {
+                        const bienesContainers = document.querySelectorAll('.bien-container');
+                        if (bienesContainers.length === 0) {
+                            error = 'Debe agregar al menos un bien para la Sucesión.';
+                        } else {
+                            let tempTotalTasaEspecifica = 0;
+                            let bienIndex = 0;
+                            for (const bienDiv of bienesContainers) {
+                                bienIndex++;
+                                const uniqueBienId = bienDiv.dataset.uniqueId;
+                                const tipoSucesion = document.getElementById(`${uniqueBienId}-tipoSucesion`).value;
+                                let tasaEspecificaBien = 0;
+                                let montoBaseOriginal = 0;
+                                let montoBaseEnPesosParaCalculo = 0;
+                                let porcentajeAplicadoDisplay = null;
+                                let porcentajeCalculo = null;
+                                let montoMinimoAplicadoBien = 0;
+                                let baseImponibleCalculada = null;
+                                let bienDetail = {
+                                    nombre: `Bien #${bienIndex}`,
+                                    tipoBien: getCleanOptionText(document.getElementById(`${uniqueBienId}-tipoSucesion`))
+                                };
+                                if (!tipoSucesion) {
+                                    error = `Por favor, seleccione el Tipo de Bien para ${bienDetail.nombre}.`;
+                                    break;
+                                } else if (tipoSucesion === 'sumaDinero') {
+                                    montoBaseOriginal = unformatInput(document.getElementById(`${uniqueBienId}-valorBienesSumaDineroInput`).value);
+                                    if (isNaN(montoBaseOriginal) || montoBaseOriginal <= 0) {
+                                        error = `Por favor, ingrese un Valor de Bienes válido y positivo para "${bienDetail.nombre}".`;
+                                        break;
+                                    } else {
+                                        const selectedMoneda = document.getElementById(`${uniqueBienId}-monedaSelect`).value;
+                                        if (!selectedMoneda) {
+                                            error = `Por favor, seleccione la moneda (Pesos o Dólares) para "${bienDetail.nombre}".`;
+                                            break;
+                                        } else if (selectedMoneda === 'dolares') {
+                                            const cotizacionDolarValue = unformatInput(document.getElementById(`${uniqueBienId}-cotizacionDolarInput`).value);
+                                            if (isNaN(cotizacionDolarValue) || cotizacionDolarValue <= 0) {
+                                                error = `Por favor, ingrese una Cotización Dólar válida y positiva para "${bienDetail.nombre}".`;
+                                                break;
+                                            } else {
+                                                montoBaseEnPesosParaCalculo = montoBaseOriginal * cotizacionDolarValue;
+                                                bienDetail.monedaOriginal = `U$S ${montoBaseOriginal.toFixed(2)}`;
+                                                bienDetail.cotizacionDolar = formatCurrency(cotizacionDolarValue);
+                                                bienDetail.montoEnPesosParaCalculo = montoBaseEnPesosParaCalculo;
+                                            }
+                                        } else {
+                                            montoBaseEnPesosParaCalculo = montoBaseOriginal;
+                                            bienDetail.montoEnPesosParaCalculo = montoBaseEnPesosParaCalculo;
+                                        }
+                                    }
+                                    porcentajeAplicadoDisplay = "1.2% sobre el Valor Declarado";
+                                    porcentajeCalculo = TASA_SUCESION_BASE;
+                                } else if (tipoSucesion === 'automotor' || tipoSucesion === 'inmueble') {
+                                    const selectedSituacion = document.getElementById(`${uniqueBienId}-situacionSelect`).value;
+                                    bienDetail.situacion = getCleanOptionText(document.getElementById(`${uniqueBienId}-situacionSelect`));
+                                    if (!selectedSituacion) {
+                                        error = `Por favor, seleccione la Situación para "${bienDetail.nombre}".`;
+                                        break;
+                                    } else if (selectedSituacion === 'sucesion') {
+                                        const selectedBien = document.getElementById(`${uniqueBienId}-bienSelect`).value;
+                                        const valuacionFiscalValue = unformatInput(document.getElementById(`${uniqueBienId}-valuacionFiscalInput`).value);
+                                        bienDetail.bien = getCleanOptionText(document.getElementById(`${uniqueBienId}-bienSelect`));
+                                        bienDetail.valuacionFiscal = valuacionFiscalValue;
+                                        if (!selectedBien) {
+                                            error = `Por favor, seleccione el Tipo de Bien (Ganancial/Propio) para "${bienDetail.nombre}".`;
+                                            break;
+                                        } else if (isNaN(valuacionFiscalValue) || valuacionFiscalValue <= 0) {
+                                            error = `Por favor, ingrese una Valuación Fiscal/Tasación válida y positiva para "${bienDetail.nombre}".`;
+                                            break;
+                                        } else {
+                                            if (selectedBien === 'ganancial') {
+                                                montoBaseEnPesosParaCalculo = valuacionFiscalValue * TASA_SUCESION_GANANCIAL_FACTOR;
+                                                baseImponibleCalculada = montoBaseEnPesosParaCalculo;
+                                                porcentajeAplicadoDisplay = "50% sobre 1.2% del Valor Declarado";
+                                                porcentajeCalculo = TASA_SUCESION_BASE;
+                                            } else {
+                                                montoBaseEnPesosParaCalculo = valuacionFiscalValue;
+                                                porcentajeAplicadoDisplay = "1.2% sobre el Valor Declarado";
+                                                porcentajeCalculo = TASA_SUCESION_PROPIO;
+                                            }
+                                            bienDetail.montoEnPesosParaCalculo = montoBaseEnPesosParaCalculo;
+                                            bienDetail.baseImponible = baseImponibleCalculada;
+                                        }
+                                    } else if (selectedSituacion === 'tractoAbreviado') {
+                                        const montoOperacionValue = unformatInput(document.getElementById(`${uniqueBienId}-montoOperacionInput`).value);
+                                        const valuacionFiscalValue = unformatInput(document.getElementById(`${uniqueBienId}-valuacionFiscalInput`).value);
+                                        bienDetail.montoOperacion = montoOperacionValue;
+                                        bienDetail.valuacionFiscal = valuacionFiscalValue;
+                                        if (isNaN(montoOperacionValue) || montoOperacionValue <= 0) {
+                                            error = `Por favor, ingrese un Monto de la Operación válido y positivo para "${bienDetail.nombre}".`;
+                                            break;
+                                        } else if (isNaN(valuacionFiscalValue) || valuacionFiscalValue <= 0) {
+                                            error = `Por favor, ingrese una Valuación Fiscal/Tasación válida y positiva para "${bienDetail.nombre}".`;
+                                            break;
+                                        } else {
+                                            montoBaseEnPesosParaCalculo = Math.max(montoOperacionValue, valuacionFiscalValue);
+                                            bienDetail.montoEnPesosParaCalculo = montoBaseEnPesosParaCalculo;
+                                            porcentajeAplicadoDisplay = "1.2% sobre el Mayor Valor (Operación o Valuación Fiscal/Tasación)";
+                                            porcentajeCalculo = TASA_TRACTO_ABREVIADO;
+                                        }
+                                    }
+                                } else if (tipoSucesion === 'sociedad') {
+                                    const patrimonioValue = unformatInput(document.getElementById(`${uniqueBienId}-patrimonioSociedadInput`).value);
+                                    const porcentajeValue = unformatInput(document.getElementById(`${uniqueBienId}-porcentajeSociedadInput`).value);
+                                    const producidoValue = unformatInput(document.getElementById(`${uniqueBienId}-producidoSociedadInput`).value);
+                                    if (isNaN(patrimonioValue) || patrimonioValue <= 0) {
+                                        error = `Por favor, ingrese un Patrimonio Neto válido y positivo para "${bienDetail.nombre}".`;
+                                        break;
+                                    }
+                                    if (isNaN(porcentajeValue) || porcentajeValue <= 0) {
+                                        error = `Por favor, ingrese un Porcentaje de Participación válido y positivo para "${bienDetail.nombre}".`;
+                                        break;
+                                    }
+                                    if (isNaN(producidoValue) || producidoValue < 0) {
+                                        error = `Por favor, ingrese un Producido válido (puede ser 0) para "${bienDetail.nombre}".`;
+                                        break;
+                                    }
+                                    const basePatrimonio = patrimonioValue * (porcentajeValue / 100);
+                                    let tasaPatrimonio = basePatrimonio * TASA_SUCESION_PROPIO;
+                                    if (tasaPatrimonio < MINIMO_SUCESION) tasaPatrimonio = MINIMO_SUCESION;
+                                    let tasaProducido = 0;
+                                    if (producidoValue > 0) {
+                                        const baseProd = producidoValue * (porcentajeValue / 100);
+                                        tasaProducido = baseProd * TASA_SUCESION_PROPIO;
+                                        if (tasaProducido < MINIMO_SUCESION) tasaProducido = MINIMO_SUCESION;
+                                    }
+                                    tasaEspecificaBien = tasaPatrimonio + tasaProducido;
+                                    porcentajeAplicadoDisplay = "1.2% sobre participación";
+                                    montoBaseEnPesosParaCalculo = basePatrimonio + (producidoValue > 0 ? producidoValue * (porcentajeValue/100) : 0);
+                                    bienDetail.patrimonioNeto = patrimonioValue;
+                                    bienDetail.porcentaje = porcentajeValue;
+                                    bienDetail.producido = producidoValue;
+                                    bienDetail.montoEnPesosParaCalculo = montoBaseEnPesosParaCalculo;
+                                }
+                                if (error) break;
+                                if (tipoSucesion !== 'sociedad') {
+                                    const tasaCalculadaPorPorcentaje = montoBaseEnPesosParaCalculo * porcentajeCalculo;
+                                    tasaEspecificaBien = Math.max(tasaCalculadaPorPorcentaje, MINIMO_SUCESION);
+                                    if (tasaEspecificaBien === MINIMO_SUCESION && tasaCalculadaPorPorcentaje < MINIMO_SUCESION) {
+                                         montoMinimoAplicadoBien = MINIMO_SUCESION;
+                                    }
+                                }
+                                bienDetail.porcentajeAplicado = porcentajeAplicadoDisplay;
+                                if (tasaEspecificaBien !== undefined) bienDetail.tasaCalculada = tasaEspecificaBien;
+                                bienDetail.minimoAplicado = montoMinimoAplicadoBien;
+                                bienDetail.tipo = "Sucesion";
+                                detallesBienesCalculados.push(bienDetail);
+                                tempTotalTasaEspecifica += tasaEspecificaBien;
+                            }
+                            totalTasaEspecifica = tempTotalTasaEspecifica;
+                        }
+                    }
+                } else if (selectedTipo === 'ordinario') {
+                    tasaAbonada = unformatInput(tasaAbonadaOrdinarioInput.value);
+                    const monedaOrd = monedaOrdinarioSelect.value;
+                    const montoDemanda = unformatInput(montoDemandaOrdinarioInput.value);
+                    let montoEnPesos = 0;
+                    if (isNaN(tasaAbonada) || tasaAbonada < 0) {
+                        error = 'Por favor, ingrese un valor válido para Tasa Abonada (puede ser 0).';
+                    } else if (!monedaOrd) {
+                        error = 'Por favor, seleccione la Moneda para el Juicio Ordinario.';
+                    } else if (isNaN(montoDemanda) || montoDemanda <= 0) {
+                        error = 'Por favor, ingrese un Monto de la Demanda válido y positivo.';
+                    } else if (monedaOrd === 'dolares') {
+                        const cotizacion = unformatInput(cotizacionDolarOrdinarioInput.value);
+                        if (isNaN(cotizacion) || cotizacion <= 0) {
+                            error = 'Por favor, ingrese una Cotización Dólar válida y positiva.';
+                        } else {
+                            montoEnPesos = montoDemanda * cotizacion;
+                        }
+                    } else {
+                        montoEnPesos = montoDemanda;
+                    }
+                    if (!error) {
+                        const tasa = montoEnPesos * TASA_ORDINARIO;
+                        totalTasaEspecifica = tasa < MINIMO_TOTAL_ORD_DIV ? MINIMO_TOTAL_ORD_DIV : tasa;
+                        if (totalTasaEspecifica === MINIMO_TOTAL_ORD_DIV && tasa < MINIMO_TOTAL_ORD_DIV) {
+                            minimoTotalAplicado = MINIMO_TOTAL_ORD_DIV;
+                        }
+                        const bienDetail = {
+                            nombre: 'Juicio Ordinario',
+                            tipo: 'Ordinario',
+                            montoOriginal: montoDemanda,
+                            montoEnPesosParaCalculo: montoEnPesos,
+                            porcentajeAplicado: '2.5% sobre el Monto de la Demanda',
+                            tasaCalculada: totalTasaEspecifica,
+                            minimoAplicado: minimoTotalAplicado,
+                            tipoBien: '',
+                        };
+                        if (monedaOrd === 'dolares') {
+                            bienDetail.monedaOriginal = `U$S ${montoDemanda.toFixed(2)}`;
+                            bienDetail.cotizacionDolar = formatCurrency(unformatInput(cotizacionDolarOrdinarioInput.value));
+                        }
+                        detallesBienesCalculados.push(bienDetail);
+                    }
+                } else if (selectedTipo === 'divorcio') {
+                    tasaAbonada = unformatInput(tasaAbonadaDivorcioInput.value);
+                    if (isNaN(tasaAbonada) || tasaAbonada < 0) {
+                        error = 'Por favor, ingrese un valor válido para Tasa Abonada (puede ser 0).';
+                    }
+                    if (!error) {
+                        const bienesDivs = document.querySelectorAll('.bien-divorcio-container');
+                        if (bienesDivs.length === 0) {
+                            error = 'Debe agregar al menos un bien para el Divorcio.';
+                        } else {
+                            let tempTotal = 0;
+                            let bienIndex = 0;
+                            for (const div of bienesDivs) {
+                                bienIndex++;
+                                const id = div.dataset.uniqueId;
+                                const tipoBienDiv = document.getElementById(`${id}-tipo`).value;
+                                const bienDetail = {
+                                    nombre: `Bien #${bienIndex}`,
+                                    tipo: 'Divorcio',
+                                    tipoBien: getCleanOptionText(document.getElementById(`${id}-tipo`))
+                                };
+                                if (!tipoBienDiv) {
+                                    error = `Por favor, seleccione el Tipo de Bien para ${bienDetail.nombre}.`;
+                                    break;
+                                }
+                                if (tipoBienDiv === 'registrable') {
+                                    const valorBien = unformatInput(document.getElementById(`${id}-valor`).value);
+                                    if (isNaN(valorBien) || valorBien <= 0) {
+                                        error = `Por favor, ingrese un Valor del Bien válido y positivo para "${bienDetail.nombre}".`;
+                                        break;
+                                    }
+                                    const tasa = valorBien * TASA_SUCESION_PROPIO;
+                                    tempTotal += tasa;
+                                    bienDetail.valorBien = valorBien;
+                                    bienDetail.porcentajeAplicado = '1.2% del Valor del Bien';
+                                    bienDetail.tasaCalculada = tasa;
+                                    bienDetail.minimoAplicado = 0;
+                                } else if (tipoBienDiv === 'sociedad') {
+                                    const patrimonioValue = unformatInput(document.getElementById(`${id}-patrimonio`).value);
+                                    const porcentajeValue = unformatInput(document.getElementById(`${id}-porcentaje`).value);
+                                    const producidoValue = unformatInput(document.getElementById(`${id}-producido`).value);
+                                    if (isNaN(patrimonioValue) || patrimonioValue <= 0) {
+                                        error = `Por favor, ingrese un Patrimonio Neto válido y positivo para "${bienDetail.nombre}".`;
+                                        break;
+                                    } else if (isNaN(porcentajeValue) || porcentajeValue <= 0) {
+                                        error = `Por favor, ingrese un Porcentaje de Participación válido y positivo para "${bienDetail.nombre}".`;
+                                        break;
+                                    } else if (isNaN(producidoValue) || producidoValue < 0) {
+                                        error = `Por favor, ingrese un Producido válido (puede ser 0) para "${bienDetail.nombre}".`;
+                                        break;
+                                    }
+                                    const basePatrimonio = patrimonioValue * (porcentajeValue / 100);
+                                    let tasaPatrimonio = basePatrimonio * TASA_SUCESION_PROPIO;
+                                    if (tasaPatrimonio < MINIMO_SUCESION) tasaPatrimonio = MINIMO_SUCESION;
+                                    let tasaProducido = 0;
+                                    if (producidoValue > 0) {
+                                        const baseProd = producidoValue * (porcentajeValue / 100);
+                                        tasaProducido = baseProd * TASA_SUCESION_PROPIO;
+                                        if (tasaProducido < MINIMO_SUCESION) tasaProducido = MINIMO_SUCESION;
+                                    }
+                                    const tasa = tasaPatrimonio + tasaProducido;
+                                    tempTotal += tasa;
+                                    const montoBaseEnPesosParaCalculo = basePatrimonio + (producidoValue > 0 ? producidoValue * (porcentajeValue / 100) : 0);
+                                    bienDetail.patrimonioNeto = patrimonioValue;
+                                    bienDetail.porcentaje = porcentajeValue;
+                                    bienDetail.producido = producidoValue;
+                                    bienDetail.montoEnPesosParaCalculo = montoBaseEnPesosParaCalculo;
+                                    bienDetail.porcentajeAplicado = '1.2% sobre participación';
+                                    bienDetail.tasaCalculada = tasa;
+                                    bienDetail.minimoAplicado = 0;
+                                }
+                                detallesBienesCalculados.push(bienDetail);
+                            }
+                            totalTasaEspecifica = tempTotal < MINIMO_TOTAL_ORD_DIV ? MINIMO_TOTAL_ORD_DIV : tempTotal;
+                            if (totalTasaEspecifica === MINIMO_TOTAL_ORD_DIV && tempTotal < MINIMO_TOTAL_ORD_DIV) {
+                                minimoTotalAplicado = MINIMO_TOTAL_ORD_DIV;
+                            }
+                        }
+                    }
+                } else {
+                    error = 'Selección de trámite no válida.';
+                }
+
+                if (error) {
+                    mensajeErrorDiv.innerText = error;
+                    mensajeErrorDiv.classList.remove('hidden');
+                } else {
+                    let totalTasaJusticia = TASA_GENERAL_MOVIMIENTO_JURISDICCIONAL + totalTasaEspecifica;
+                    if ((selectedTipo === 'alimentos' || selectedTipo === 'sucesion' || selectedTipo === 'ordinario' || selectedTipo === 'divorcio') && tasaAbonada > 0) {
+                        totalTasaJusticia = Math.max(0, totalTasaJusticia - tasaAbonada);
+                        tasaAbonadaDisplay.textContent = formatCurrency(tasaAbonada);
+                        tasaAbonadaDisplayContainer.classList.remove('hidden');
+                    } else {
+                        tasaAbonadaDisplayContainer.classList.add('hidden');
+                    }
+                    tipoTramiteDisplay.textContent = getCleanOptionText(tipoSelect);
+                    tasaGeneralDisplay.textContent = formatCurrency(TASA_GENERAL_MOVIMIENTO_JURISDICCIONAL);
+                    bienesCalculadosDisplay.innerHTML = '';
+                    detallesBienesCalculados.forEach(bien => {
+                        let bienHtml = `<div class="result-item text-gray-800 mb-2 border-b border-gray-300 pb-2"><strong class="text-lg text-gray-900">${bien.nombre} ${bien.tipoBien ? `(${bien.tipoBien})` : ''}</strong><br>`;
+                        if (bien.tipo === "Alimentos") {
+                            bienHtml += `Monto Cuota Alimentaria: ${formatCurrency(bien.montoOriginal)}<br>`;
+                        } else if (bien.tipo === "Sucesion") {
+                            if (bien.tipoBien === "Suma de Dinero") {
+                                bienHtml += `Valor de Bienes: ${bien.monedaOriginal ? bien.monedaOriginal : formatCurrency(bien.montoEnPesosParaCalculo)}<br>`;
+                                if (bien.cotizacionDolar) bienHtml += `Cotización Dólar: ${bien.cotizacionDolar}<br>`;
+                                bienHtml += `Valor para Cálculo: ${formatCurrency(bien.montoEnPesosParaCalculo)}<br>`;
+                            } else if (bien.tipoBien === "Participación en Sociedad") {
+                                bienHtml += `Patrimonio Neto: ${formatCurrency(bien.patrimonioNeto)}<br>`;
+                                bienHtml += `Porcentaje de Participación: ${bien.porcentaje}%<br>`;
+                                bienHtml += `Producido: ${formatCurrency(bien.producido)}<br>`;
+                            } else {
+                                bienHtml += `Situación: ${bien.situacion}<br>`;
+                                if (bien.bien) bienHtml += `Tipo de Bien: ${bien.bien}<br>`;
+                                if (bien.montoOperacion) bienHtml += `Monto de la Operación: ${formatCurrency(bien.montoOperacion)}<br>`;
+                                if (bien.valuacionFiscal) bienHtml += `Valuación Fiscal/Tasación: ${formatCurrency(bien.valuacionFiscal)}<br>`;
+                                if (bien.baseImponible !== null) bienHtml += `Base Imponible: ${formatCurrency(bien.baseImponible)}<br>`;
+                                if (bien.situacion === 'Tracto Abreviado') bienHtml += `Base de Cálculo (Mayor Valor): ${formatCurrency(bien.montoEnPesosParaCalculo)}<br>`;
+                            }
+                        } else if (bien.tipo === "Divorcio") {
+                            if (bien.tipoBien === 'Bien Registrable') {
+                                bienHtml += `Valor del Bien: ${formatCurrency(bien.valorBien)}<br>`;
+                            } else if (bien.tipoBien === 'Participación en Sociedad') {
+                                bienHtml += `Patrimonio Neto: ${formatCurrency(bien.patrimonioNeto)}<br>`;
+                                bienHtml += `Porcentaje de Participación: ${bien.porcentaje}%<br>`;
+                                bienHtml += `Producido: ${formatCurrency(bien.producido)}<br>`;
+                            }
+                        } else if (bien.tipo === "Ordinario") {
+                            if (bien.monedaOriginal) {
+                                bienHtml += `Monto de la Demanda: ${bien.monedaOriginal}<br>`;
+                                if (bien.cotizacionDolar) bienHtml += `Cotización Dólar: ${bien.cotizacionDolar}<br>`;
+                            } else {
+                                bienHtml += `Monto de la Demanda: ${formatCurrency(bien.montoOriginal)}<br>`;
+                            }
+                            bienHtml += `Valor para Cálculo: ${formatCurrency(bien.montoEnPesosParaCalculo)}<br>`;
+                        }
+                        if (bien.porcentajeAplicado) {
+                            bienHtml += `Porcentaje Aplicado: ${bien.porcentajeAplicado}<br>`;
+                        }
+                        if (bien.tasaCalculada !== undefined) {
+                            bienHtml += `Tasa Específica del Bien: ${formatCurrency(bien.tasaCalculada)}<br>`;
+                        }
+                        if (bien.minimoAplicado > 0) {
+                            bienHtml += `Mínimo Aplicado: ${formatCurrency(bien.minimoAplicado)}<br>`;
+                        }
+                        bienHtml += `</div>`;
+                        bienesCalculadosDisplay.innerHTML += bienHtml;
+                    });
+                    if (totalTasaEspecifica > 0) {
+                        let totalHtml = `<p class="result-item text-gray-800 mb-2"><strong>Tasa Específica Total Calculada:</strong> <span id="tasaEspecificaDisplay">${formatCurrency(totalTasaEspecifica)}</span></p>`;
+                        if (minimoTotalAplicado > 0) {
+                            totalHtml += `<p class="result-item text-gray-800 mb-2"><strong>Mínimo Aplicado:</strong> ${formatCurrency(minimoTotalAplicado)}</p>`;
+                        }
+                        bienesCalculadosDisplay.innerHTML += totalHtml;
+                    }
+                    totalTasaDisplay.textContent = formatCurrency(totalTasaJusticia);
+                    resultadoDiv.classList.remove('hidden');
+                    ultimaTasaCalculada = {
+                        tasaGeneral: TASA_GENERAL_MOVIMIENTO_JURISDICCIONAL,
+                        tipoTramite: getCleanOptionText(tipoSelect),
+                        detallesBienes: detallesBienesCalculados,
+                        totalTasaEspecifica: totalTasaEspecifica,
+                        minimoTotalAplicado: minimoTotalAplicado,
+                        tasaAbonada: tasaAbonada,
+                        totalTasa: totalTasaJusticia
+                    };
+                }
+            });
+            btnBorrar.addEventListener('click', resetearCampos);
+            btnGenerarFormulario.addEventListener('click', () => {
+                window.open('https://www.jussantacruz.gob.ar/index.php/sistema-de-tasas-judiciales', '_blank');
+            });
+            btnDescargarPDF.addEventListener('click', () => {
+                if (!ultimaTasaCalculada) {
+                    mensajeErrorDiv.innerText = 'Primero debe realizar un cálculo para poder descargar el PDF.';
+                    mensajeErrorDiv.classList.remove('hidden');
+                    return;
+                }
+                const defaultFileName = `TasaDeJusticia_${ultimaTasaCalculada.tipoTramite.replace(/\s/g, '_')}_${new Date().toLocaleDateString('es-AR').replace(/\//g, '-')}.pdf`;
+                pdfFileNameInput.value = defaultFileName;
+                pdfNameModal.classList.remove('hidden');
+            });
+            cancelPdfDownloadBtn.addEventListener('click', () => { pdfNameModal.classList.add('hidden'); });
+            confirmPdfDownloadBtn.addEventListener('click', () => {
+                const fileName = pdfFileNameInput.value.trim();
+                if (!fileName) {
+                    alert('Por favor, ingrese un nombre para el archivo.');
+                    return;
+                }
+                const finalFileName = fileName.endsWith('.pdf') ? fileName : `${fileName}.pdf`;
+                pdfNameModal.classList.add('hidden');
+                generateAndDownloadPdf(finalFileName);
+            });
+            const generateAndDownloadPdf = (fileName) => {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                doc.setFontSize(18);
+                doc.text('Detalle de Cálculo de Tasa de Justicia', 14, 22);
+                doc.setFontSize(12);
+                doc.text('Poder Judicial de Santa Cruz', 14, 30);
+                doc.text(`Fecha: ${new Date().toLocaleDateString('es-AR')}`, 14, 38);
+                doc.text(`Hora: ${new Date().toLocaleTimeString('es-AR')}`, 14, 46);
+                let yPos = 60;
+                doc.text(`Tipo de Trámite Seleccionado: ${ultimaTasaCalculada.tipoTramite}`, 14, yPos); yPos += 10;
+                doc.text(`Tasa General por Movimiento Jurisdiccional: ${formatCurrency(ultimaTasaCalculada.tasaGeneral)}`, 14, yPos); yPos += 15;
+                if (ultimaTasaCalculada.detallesBienes.some(bien => bien.tipo === "Alimentos" || bien.tipo === "Sucesion" || bien.tipo === "Divorcio" || bien.tipo === "Ordinario")) {
+                    doc.setFontSize(14); doc.text('Detalles de Bienes:', 14, yPos); yPos += 10; doc.setFontSize(12);
+                    ultimaTasaCalculada.detallesBienes.forEach(bien => {
+                        if (yPos + 50 > doc.internal.pageSize.height - 20) { doc.addPage(); yPos = 20; doc.setFontSize(14); doc.text('Detalles de Bienes (cont.):', 14, yPos); yPos += 10; doc.setFontSize(12); }
+                        let bienDisplay = `- ${bien.nombre}`; if (bien.tipoBien && bien.tipoBien !== "") bienDisplay += ` (${bien.tipoBien})`; doc.text(bienDisplay, 18, yPos); yPos += 7;
+                        if (bien.tipo === "Alimentos") { doc.text(`  Monto Cuota Alimentaria: ${formatCurrency(bien.montoOriginal)}`, 22, yPos); yPos += 7; }
+                        else if (bien.tipo === "Sucesion") {
+                            if (bien.tipoBien === "Suma de Dinero") {
+                                doc.text(`  Valor de Bienes: ${bien.monedaOriginal ? bien.monedaOriginal : formatCurrency(bien.montoEnPesosParaCalculo)}`, 22, yPos); yPos += 7;
+                                if (bien.cotizacionDolar && bien.cotizacionDolar !== 'N/A') { doc.text(`  Cotización Dólar: ${bien.cotizacionDolar}`, 22, yPos); yPos += 7; }
+                                doc.text(`  Valor para Cálculo: ${formatCurrency(bien.montoEnPesosParaCalculo)}`, 22, yPos); yPos += 7;
+                            } else if (bien.tipoBien === "Participación en Sociedad") {
+                                doc.text(`  Patrimonio Neto: ${formatCurrency(bien.patrimonioNeto)}`, 22, yPos); yPos += 7;
+                                doc.text(`  Porcentaje de Participación: ${bien.porcentaje}%`, 22, yPos); yPos += 7;
+                                doc.text(`  Producido: ${formatCurrency(bien.producido)}`, 22, yPos); yPos += 7;
+                            } else {
+                                doc.text(`  Situación: ${bien.situacion}`, 22, yPos); yPos += 7;
+                                if (bien.bien && bien.bien !== 'N/A') { doc.text(`  Tipo de Bien: ${bien.bien}`, 22, yPos); yPos += 7; }
+                                if (bien.montoOperacion && bien.montoOperacion !== 'N/A') { doc.text(`  Monto de la Operación: ${formatCurrency(bien.montoOperacion)}`, 22, yPos); yPos += 7; }
+                                if (bien.valuacionFiscal && bien.valuacionFiscal !== 'N/A') { doc.text(`  Valuación Fiscal/Tasación: ${formatCurrency(bien.valuacionFiscal)}`, 22, yPos); yPos += 7; }
+                                if (bien.baseImponible !== null) { doc.text(`  Base Imponible: ${formatCurrency(bien.baseImponible)}`, 22, yPos); yPos += 7; }
+                                if (bien.situacion === 'Tracto Abreviado') { doc.text(`  Base de Cálculo (Mayor Valor): ${formatCurrency(bien.montoEnPesosParaCalculo)}`, 22, yPos); yPos += 7; }
+                            }
+                        } else if (bien.tipo === "Divorcio") {
+                            if (bien.tipoBien === 'Bien Registrable') {
+                                doc.text(`  Valor del Bien: ${formatCurrency(bien.valorBien)}`, 22, yPos); yPos += 7;
+                            } else if (bien.tipoBien === 'Participación en Sociedad') {
+                                doc.text(`  Patrimonio Neto: ${formatCurrency(bien.patrimonioNeto)}`, 22, yPos); yPos += 7;
+                                doc.text(`  Porcentaje de Participación: ${bien.porcentaje}%`, 22, yPos); yPos += 7;
+                                doc.text(`  Producido: ${formatCurrency(bien.producido)}`, 22, yPos); yPos += 7;
+                            }
+                        } else if (bien.tipo === "Ordinario") {
+                            if (bien.monedaOriginal) {
+                                doc.text(`  Monto de la Demanda: ${bien.monedaOriginal}`, 22, yPos); yPos += 7;
+                                if (bien.cotizacionDolar) { doc.text(`  Cotización Dólar: ${bien.cotizacionDolar}`, 22, yPos); yPos += 7; }
+                            } else {
+                                doc.text(`  Monto de la Demanda: ${formatCurrency(bien.montoOriginal)}`, 22, yPos); yPos += 7;
+                            }
+                            doc.text(`  Valor para Cálculo: ${formatCurrency(bien.montoEnPesosParaCalculo)}`, 22, yPos); yPos += 7;
+                        }
+                        if (bien.porcentajeAplicado) { doc.text(`  Porcentaje Aplicado: ${bien.porcentajeAplicado}`, 22, yPos); yPos += 7; }
+                        if (bien.tasaCalculada !== undefined) { doc.text(`  Tasa Específica del Bien: ${formatCurrency(bien.tasaCalculada)}`, 22, yPos); yPos += 7; }
+                        if (bien.minimoAplicado > 0) { doc.text(`  (Se aplicó el mínimo de ${formatCurrency(bien.minimoAplicado)})`, 22, yPos); yPos += 7; }
+                        yPos += 3;
+                    });
+                    if (ultimaTasaCalculada.totalTasaEspecifica > 0) {
+                        doc.text('-----------------------------------------------', 14, yPos); yPos += 10;
+                        doc.setFontSize(14);
+                        doc.text(`Tasa Específica Total Calculada: ${formatCurrency(ultimaTasaCalculada.totalTasaEspecifica)}`, 14, yPos); yPos += 7;
+                        if (ultimaTasaCalculada.minimoTotalAplicado > 0) {
+                            doc.text(`Mínimo Aplicado: ${formatCurrency(ultimaTasaCalculada.minimoTotalAplicado)}`, 14, yPos); yPos += 7;
+                        }
+                        doc.setFontSize(12);
+                    }
+                }
+                if (yPos + 40 > doc.internal.pageSize.height - 20) { doc.addPage(); yPos = 20; }
+                if (ultimaTasaCalculada.tasaAbonada > 0) { doc.setFontSize(14); doc.text(`Tasa Abonada: ${formatCurrency(ultimaTasaCalculada.tasaAbonada)}`, 14, yPos); yPos += 10; }
+                doc.setFontSize(16); doc.text(`Total Tasa de Justicia a Abonar: ${formatCurrency(ultimaTasaCalculada.totalTasa)}`, 14, yPos + 5);
+                if (navigator.userAgent.toLowerCase().includes("android") || navigator.userAgent.toLowerCase().includes("iphone")) {
+                    const blob = doc.output('blob');
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = fileName;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(link.href);
+                } else {
+                    doc.save(fileName);
+                }
+            };
+        });
+    </script>
+   </div>
+  </div>
+ </body>
+</html>
